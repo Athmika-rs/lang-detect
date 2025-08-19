@@ -1,19 +1,25 @@
 import streamlit as st
-import joblib
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
 
-# Load model & vectorizer
-model = joblib.load("language_model.pkl")
-vectorizer = joblib.load("tfidf_vectorizer.pkl")
+# Load dataset
+df = pd.read_csv("Language_Dataset.csv")
 
-# Streamlit UI
+X = df["text"]
+y = df["language"]
+
+vectorizer = TfidfVectorizer()
+X_vec = vectorizer.fit_transform(X)
+
+model = RandomForestClassifier(n_estimators=200, random_state=42)
+model.fit(X_vec, y)
+
 st.title("🌍 Language Detection App")
-st.write("Detects the language of a given sentence using TF-IDF + Random Forest.")
 
-# User Input
 user_input = st.text_input("Enter a sentence:")
 
 if user_input:
-    # Transform input
-    input_tfidf = vectorizer.transform([user_input])
-    prediction = model.predict(input_tfidf)[0]
+    input_vec = vectorizer.transform([user_input])
+    prediction = model.predict(input_vec)[0]
     st.success(f"Predicted Language: **{prediction}**")
